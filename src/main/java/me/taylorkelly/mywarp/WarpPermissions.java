@@ -1,19 +1,14 @@
 package me.taylorkelly.mywarp;
 
-import ru.tehkode.permissions.bukkit.PermissionsEx;
-import com.nijikokun.bukkit.Permissions.Permissions;
-import org.anjocaido.groupmanager.GroupManager;
-
-import me.taylorkelly.mywarp.WarpLogger;
-
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
+import com.nijikokun.bukkit.Permissions.Permissions;
 
 public class WarpPermissions {
 
     private enum PermissionHandler {
-        PERMISSIONSEX, PERMISSIONS, PERMISSIONS3, GROUPMANAGER, NONE
+        PERMISSIONSEX, PERMISSIONS, PERMISSIONS3, GROUPMANAGER, SUPERPERMS, NONE
     }
     private static PermissionHandler handler;
     private static Plugin permissionPlugin;
@@ -42,7 +37,11 @@ public class WarpPermissions {
             	handler = PermissionHandler.PERMISSIONS;
             }
             WarpLogger.info("Permissions enabled using: Permissions v" + version);
-        } else {
+        } else if(server.getPluginManager().getPermissions() != null)
+    	{
+        	handler = PermissionHandler.SUPERPERMS;
+        	WarpLogger.info("Permissions enabled using: SuperPerms");
+    	}else{
             handler = PermissionHandler.NONE;
             WarpLogger.warning("A permission plugin isn't loaded.");
         }
@@ -50,14 +49,12 @@ public class WarpPermissions {
 
     public static boolean permission(Player player, String permission, boolean defaultPerm) {
         switch (handler) {
-            case PERMISSIONSEX:
-                return ((PermissionsEx) permissionPlugin).getPermissionManager().has(player, permission);
             case PERMISSIONS3:
             	return ((Permissions) permissionPlugin).getHandler().has(player, permission);
             case PERMISSIONS:
                 return ((Permissions) permissionPlugin).getHandler().has(player, permission);
-            case GROUPMANAGER:
-                return ((GroupManager) permissionPlugin).getWorldsHolder().getWorldPermissions(player).has(player, permission);
+            case SUPERPERMS:
+            	return player.hasPermission(permission);
             case NONE:
                 return defaultPerm;
             default:
